@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160" role="img" aria-label="Organic snack box">
+  <rect width="160" height="160" rx="18" fill="#F9F9F9"/>
+  <rect x="32" y="50" width="96" height="66" rx="12" fill="#FFFFFF" stroke="#E6E6E6" stroke-width="2"/>
+  <path d="M42 64h76" stroke="#0DA487" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="56" cy="91" r="12" fill="#F5B24F"/>
+  <circle cx="82" cy="91" r="12" fill="#FF4C1A"/>
+  <circle cx="108" cy="91" r="12" fill="#215ADA"/>
+  <path d="M48 114h64" stroke="#E6E6E6" stroke-width="4" stroke-linecap="round"/>
+</svg>

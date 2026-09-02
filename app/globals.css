@@ -1,0 +1,261 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+	--font-sans: "Cabin", ui-sans-serif, system-ui, sans-serif;
+	--font-mono: ui-monospace, monospace;
+
+	--color-brand-50: #eef4ff;
+	--color-brand-100: #dde8ff;
+	--color-brand-200: #bcd2f4;
+	--color-brand-300: #a4c2f1;
+	--color-brand-400: #7a9ce9;
+	--color-brand-500: #426de0;
+	--color-brand-600: #215ada;
+	--color-brand-700: #1d49b8;
+	--color-brand-800: #173b91;
+	--color-brand-900: #102b6b;
+
+	--color-accent-50: #fff0ec;
+	--color-accent-100: #ffe1d6;
+	--color-accent-300: #ff9d7f;
+	--color-accent-500: #ff4c1a;
+	--color-accent-600: #e23c0f;
+	--color-accent-700: #b8320d;
+
+	--color-success-50: #e5fae5;
+	--color-success-100: #cff5d0;
+	--color-success-500: #24bd25;
+	--color-success-600: #157f16;
+	--color-success-700: #0e5f0f;
+
+	--color-warning-50: #fff5e1;
+	--color-warning-100: #fceac2;
+	--color-warning-500: #f5b24f;
+	--color-warning-600: #9a5b00;
+
+	--color-danger-50: #fdecec;
+	--color-danger-100: #fbd7d7;
+	--color-danger-500: #d12626;
+	--color-danger-600: #c02626;
+
+	--color-admin-sidebar: #0f9b86;
+	--color-admin-sidebar-dark: #087b70;
+	--color-admin-teal: #0da487;
+
+	--radius-base: 6px;
+	--radius-card: 10px;
+
+	--shadow-card: 0 1px 2px 0 rgba(16, 24, 40, 0.05);
+	--shadow-soft: 0 4px 30px 10px rgba(0, 0, 0, 0.05);
+	--shadow-lift: 0 10px 35px 0 rgba(0, 0, 0, 0.08);
+
+	--spacing-sidebar: 278px;
+	--spacing-topbar: 72px;
+}
+
+@theme inline {
+	--color-ink-300: rgb(var(--ink-300));
+	--color-ink-400: rgb(var(--ink-400));
+	--color-ink-500: rgb(var(--ink-500));
+	--color-ink-600: rgb(var(--ink-600));
+	--color-ink-700: rgb(var(--ink-700));
+	--color-ink-800: rgb(var(--ink-800));
+	--color-ink-900: rgb(var(--ink-900));
+
+	--color-surface-body: rgb(var(--surface-body));
+	--color-surface-card: rgb(var(--surface-card));
+	--color-surface-muted: rgb(var(--surface-muted));
+	--color-surface-line: rgb(var(--surface-line));
+}
+
+:root {
+	--surface-body: 249 249 249;
+	--surface-card: 255 255 255;
+	--surface-muted: 243 243 243;
+	--surface-line: 230 230 230;
+	--ink-300: 193 193 193;
+	--ink-400: 110 110 110;
+	--ink-500: 85 85 85;
+	--ink-600: 68 68 68;
+	--ink-700: 51 51 51;
+	--ink-800: 17 17 17;
+	--ink-900: 5 5 31;
+}
+
+.dark {
+	--surface-body: 15 19 28;
+	--surface-card: 24 29 41;
+	--surface-muted: 35 42 58;
+	--surface-line: 47 55 74;
+	--ink-300: 90 102 122;
+	--ink-400: 124 136 156;
+	--ink-500: 148 163 184;
+	--ink-600: 174 185 204;
+	--ink-700: 203 213 225;
+	--ink-800: 230 234 240;
+	--ink-900: 245 247 250;
+}
+
+body {
+	background: rgb(var(--surface-body));
+	color: rgb(var(--ink-500));
+	font-family: "Cabin", ui-sans-serif, system-ui, sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	color: rgb(var(--ink-900));
+	font-weight: 600;
+}
+
+a,
+button,
+input,
+select,
+textarea {
+	transition-duration: 200ms;
+	transition-property:
+		color, background-color, border-color, text-decoration-color, fill, stroke;
+}
+
+button,
+input,
+select,
+textarea {
+	accent-color: #215ada;
+	font: inherit;
+}
+
+a:focus-visible,
+button:focus-visible,
+[tabindex]:focus-visible {
+	box-shadow:
+		0 0 0 2px rgb(var(--surface-card)),
+		0 0 0 4px #215ada;
+	outline: none;
+}
+
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+	border-color: #215ada;
+	box-shadow: none;
+	outline: none;
+}
+
+.dashboard-scrollbar {
+	scrollbar-color: #d6d3d1 #f5f5f4;
+	scrollbar-width: thin;
+}
+
+.dark .dashboard-scrollbar {
+	scrollbar-color: #737373 #404040;
+}
+
+.dashboard-scrollbar::-webkit-scrollbar {
+	height: 8px;
+	width: 8px;
+}
+
+.dashboard-scrollbar::-webkit-scrollbar-track {
+	background: #f5f5f4;
+	border-radius: 9999px;
+}
+
+.dashboard-scrollbar::-webkit-scrollbar-thumb {
+	background: #d6d3d1;
+	border-radius: 9999px;
+}
+
+.dark .dashboard-scrollbar::-webkit-scrollbar-track {
+	background: #404040;
+}
+
+.dark .dashboard-scrollbar::-webkit-scrollbar-thumb {
+	background: #737373;
+}
+
+.no-scrollbar {
+	-ms-overflow-style: none;
+	scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+	display: none;
+}
+
+.badge {
+	align-items: center;
+	border-radius: 9999px;
+	display: inline-flex;
+	font-size: 12px;
+	font-weight: 700;
+	line-height: 1;
+	padding: 6px 10px;
+	white-space: nowrap;
+}
+
+.icon-button {
+	align-items: center;
+	border-radius: 6px;
+	display: inline-flex;
+	height: 36px;
+	justify-content: center;
+	width: 36px;
+}
+
+.no-theme-transition *,
+.no-theme-transition *::before,
+.no-theme-transition *::after {
+	transition: none;
+}
+
+.sidebar-ready #admin-sidebar {
+	transition:
+		width 0.3s ease,
+		transform 0.3s ease;
+}
+
+@media (min-width: 1024px) {
+	.sidebar-ready .lg\:pl-sidebar {
+		transition: padding-left 0.3s ease;
+	}
+
+	.sidebar-collapsed #admin-sidebar {
+		width: 80px;
+	}
+
+	.sidebar-collapsed .lg\:pl-sidebar {
+		padding-left: 80px;
+	}
+
+	.sidebar-collapsed #admin-sidebar .nav-text,
+	.sidebar-collapsed #admin-sidebar .ws-text,
+	.sidebar-collapsed #admin-sidebar .user-text,
+	.sidebar-collapsed #admin-sidebar .logo-full,
+	.sidebar-collapsed #admin-sidebar .nav-search,
+	.sidebar-collapsed #admin-sidebar [data-nav-submenu] {
+		display: none;
+	}
+
+	.sidebar-collapsed #admin-sidebar .logo-mark {
+		display: grid;
+	}
+
+	.sidebar-collapsed #admin-sidebar .sidebar-link,
+	.sidebar-collapsed #admin-sidebar .ws-switch,
+	.sidebar-collapsed #admin-sidebar .user-switch {
+		cursor: pointer;
+		justify-content: center;
+	}
+
+	.sidebar-collapsed #admin-sidebar .sidebar-header {
+		flex-direction: column;
+	}
+}

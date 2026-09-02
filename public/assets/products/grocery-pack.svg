@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160" role="img" aria-label="Fresh grocery pack">
+  <rect width="160" height="160" rx="18" fill="#F9F9F9"/>
+  <path d="M42 58h76l-8 62H50L42 58Z" fill="#FFFFFF" stroke="#E6E6E6" stroke-width="2"/>
+  <path d="M57 58c0-16 10-25 23-25s23 9 23 25" fill="none" stroke="#215ADA" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="65" cy="89" r="11" fill="#0DA487"/>
+  <circle cx="92" cy="89" r="11" fill="#FF4C1A"/>
+  <path d="M61 113h39" stroke="#F5B24F" stroke-width="5" stroke-linecap="round"/>
+</svg>
