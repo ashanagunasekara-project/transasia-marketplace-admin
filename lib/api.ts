@@ -453,3 +453,143 @@ export async function uploadImageFile(file: File): Promise<string> {
 
 	return json.url; // e.g. "/uploads/img-1234567.jpg"
 }
+
+// ----------------------------------------------------
+// Customers API
+// ----------------------------------------------------
+
+export type ApiCustomer = {
+	approvalStatus: "PENDING" | "APPROVED" | "REJECTED";
+	brcDocumentUrl?: string | null;
+	businessAddress?: string | null;
+	businessName?: string | null;
+	createdAt: string;
+	customerType: "REGULAR" | "WHOLESALE";
+	email: string | null;
+	fullName: string;
+	id: string;
+	isLocked: boolean;
+	lockedUntil?: string | null;
+	ordersCount: number;
+	otpRetryCount: number;
+	ownerName?: string | null;
+	phone: string;
+	totalSpent: number;
+	userId: string;
+	userStatus: string;
+	wholesaleCustomerId?: string | null;
+};
+
+export type CustomerStats = {
+	locked: number;
+	regular: number;
+	total: number;
+	wholesaleApproved: number;
+	wholesalePending: number;
+};
+
+export async function fetchCustomers(params?: {
+	limit?: number;
+	page?: number;
+	search?: string;
+	status?: string;
+	type?: string;
+}): Promise<{ customers: ApiCustomer[]; totalCount: number }> {
+	try {
+		const query = new URLSearchParams();
+		if (params?.type) query.set("type", params.type);
+		if (params?.status) query.set("status", params.status);
+		if (params?.search) query.set("search", params.search);
+		if (params?.page) query.set("page", String(params.page));
+		if (params?.limit) query.set("limit", String(params.limit));
+
+		const res = await fetch(`${API_URL}/api/admin/customers?${query.toString()}`, {
+			cache: "no-store",
+		});
+		if (!res.ok) {
+			return { customers: [], totalCount: 0 };
+		}
+		const json = await res.json();
+		return {
+			customers: json.data || [],
+			totalCount: json.pagination?.totalCount || json.data?.length || 0,
+		};
+	} catch (error) {
+		console.warn("fetchCustomers error:", error);
+		return { customers: [], totalCount: 0 };
+	}
+}
+
+export async function fetchCustomerStats(): Promise<CustomerStats> {
+	try {
+		const res = await fetch(`${API_URL}/api/admin/customers/stats`, {
+			cache: "no-store",
+		});
+		if (!res.ok) {
+			return { locked: 0, regular: 0, total: 0, wholesaleApproved: 0, wholesalePending: 0 };
+		}
+		const json = await res.json();
+		return json.stats || { locked: 0, regular: 0, total: 0, wholesaleApproved: 0, wholesalePending: 0 };
+	} catch (error) {
+		console.warn("fetchCustomerStats error:", error);
+		return { locked: 0, regular: 0, total: 0, wholesaleApproved: 0, wholesalePending: 0 };
+	}
+}
+
+export async function approveWholesaleCustomer(id: string, wholesaleCustomerId?: string) {
+	const res = await fetch(`${API_URL}/api/admin/wholesale-applications/${id}/approve`, {
+		body: JSON.stringify({ wholesaleCustomerId }),
+		headers: { "Content-Type": "application/json" },
+		method: "PATCH",
+	});
+	const json = await res.json();
+	if (!res.ok || !json.success) {
+		throw new Error(json.message || "Failed to approve wholesale customer");
+	}
+	return json.data;
+}
+
+export async function rejectWholesaleCustomer(id: string) {
+	const res = await fetch(`${API_URL}/api/admin/wholesale-applications/${id}/reject`, {
+		headers: { "Content-Type": "application/json" },
+		method: "PATCH",
+	});
+	const json = await res.json();
+	if (!res.ok || !json.success) {
+		throw new Error(json.message || "Failed to reject wholesale customer");
+	}
+	return json.data;
+}
+
+export async function resetCustomerLockout(idOrUserId: string) {
+	const res = await fetch(`${API_URL}/api/admin/customers/${idOrUserId}/reset-lockout`, {
+		method: "POST",
+	});
+	const json = await res.json();
+	if (!res.ok || !json.success) {
+		throw new Error(json.message || "Failed to reset lockout");
+	}
+	return json;
+}
+
+export async function createAdminCustomer(data: {
+	businessAddress?: string;
+	businessName?: string;
+	customerType: "REGULAR" | "WHOLESALE";
+	email?: string;
+	fullName: string;
+	ownerName?: string;
+	phone: string;
+	wholesaleCustomerId?: string;
+}) {
+	const res = await fetch(`${API_URL}/api/admin/customers`, {
+		body: JSON.stringify(data),
+		headers: { "Content-Type": "application/json" },
+		method: "POST",
+	});
+	const json = await res.json();
+	if (!res.ok || !json.success) {
+		throw new Error(json.message || "Failed to create customer");
+	}
+	return json.data;
+}
