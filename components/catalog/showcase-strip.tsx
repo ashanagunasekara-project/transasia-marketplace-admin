@@ -96,14 +96,14 @@ export function ShowcaseStrip({ items, type }: ShowcaseStripProps) {
 					? items.map((item) => (
 							<Link
 								className="group flex min-w-27.5 flex-col items-center rounded-base px-4 py-4 text-center transition-colors"
-								href={routes.editCategory}
-								key={item.name}
+								href={(item as any).id ? `/categories/${(item as any).id}/edit` : routes.editCategory}
+								key={(item as any).id || item.name}
 							>
 								<Image
 									alt={item.name}
 									className="h-26 w-26 rounded-full object-cover transition-transform group-hover:scale-105"
 									height={104}
-									src={item.image}
+									src={item.image || "/assets/images/catagory-img/cat-bg-headphones-01.webp"}
 									width={104}
 								/>
 								<span className="mt-3 line-clamp-1 text-[14px] font-semibold text-ink-900 group-hover:text-brand-600">

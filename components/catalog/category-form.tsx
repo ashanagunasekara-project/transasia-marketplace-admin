@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
 	Field,
@@ -13,39 +14,133 @@ import {
 import { Breadcrumb } from "@/components/layout/breadcrumb";
 import { Icon } from "@/components/layout/icon";
 import { routes } from "@/config/routes";
+import {
+	type ApiCategory,
+	createCategory,
+	updateCategory,
+	uploadImageFile,
+} from "@/lib/api";
 import { baseURL, cn } from "@/utils/cn";
 
 type CategoryFormProps = {
+	initialData?: ApiCategory | null;
 	mode: "add" | "edit";
 };
 
 type Tab = "general" | "rules" | "seo";
 
-export function CategoryForm({ mode }: CategoryFormProps) {
+export function CategoryForm({ initialData, mode }: CategoryFormProps) {
+	const router = useRouter();
 	const [tab, setTab] = useState<Tab>("general");
-	const [status, setStatus] = useState(mode === "edit" ? "Published" : "Draft");
-	const [guideOpen, setGuideOpen] = useState(false);
-	const [thumb, setThumb] = useState(
-		mode === "edit"
-			? `${baseURL}assets/images/catagory-img/cat-bg-headphones-01.webp`
-			: "",
+	const [status, setStatus] = useState(
+		initialData?.status === "draft" ? "Draft" : "Published",
 	);
+	const [name, setName] = useState(
+		initialData?.title || initialData?.name || (mode === "edit" ? "Headphones" : ""),
+	);
+	const [slug, setSlug] = useState(initialData?.slug || "");
+	const [slugManuallyEdited, setSlugManuallyEdited] = useState(Boolean(initialData?.slug));
+	const [description, setDescription] = useState(
+		initialData?.description ||
+			(mode === "edit"
+				? "Premium over-ear and in-ear headphones, including wireless and noise-cancelling models."
+				: ""),
+	);
+	const [thumb, setThumb] = useState(
+		initialData?.image ||
+			(mode === "edit"
+				? `${baseURL}assets/images/catagory-img/cat-bg-headphones-01.webp`
+				: ""),
+	);
+	const [selectedFile, setSelectedFile] = useState<File | null>(null);
+	const [guideOpen, setGuideOpen] = useState(false);
+	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
 	const title = mode === "edit" ? "Edit Category" : "Add Category";
-	const description =
+	const formDescription =
 		mode === "edit"
 			? "Update merchandising, SEO meta, thumbnail, and product assignment rules."
 			: "Create a merchandising group with thumbnail, SEO meta, and product assignment rules.";
+
+	function handleNameChange(value: string) {
+		setName(value);
+		if (!slugManuallyEdited) {
+			const autoSlug = value
+				.toLowerCase()
+				.trim()
+				.replace(/[^\w\s-]/g, "")
+				.replace(/[\s_-]+/g, "-");
+			setSlug(autoSlug);
+		}
+	}
+
+	async function handleSubmit(e: React.FormEvent) {
+		e.preventDefault();
+		if (!name.trim()) {
+			setErrorMessage("Category name is required");
+			return;
+		}
+
+		try {
+			setIsSubmitting(true);
+			setErrorMessage(null);
+
+			let uploadedImageUrl = thumb;
+			if (selectedFile) {
+				uploadedImageUrl = await uploadImageFile(selectedFile);
+			}
+
+			if (mode === "edit" && initialData?.id) {
+				await updateCategory(initialData.id, {
+					description,
+					image: uploadedImageUrl,
+					name,
+					slug: slug.trim() || undefined,
+					status: status.toLowerCase(),
+				});
+			} else {
+				await createCategory({
+					description,
+					image: uploadedImageUrl,
+					name,
+					slug: slug.trim() || undefined,
+					status: status.toLowerCase(),
+				});
+			}
+
+			// Force fresh data and navigate to Categories list
+			router.push(routes.categories);
+			router.refresh();
+		} catch (err: any) {
+			console.error("Failed to save category:", err);
+			setErrorMessage(err.message || "Failed to save category. Please try again.");
+		} finally {
+			setIsSubmitting(false);
+		}
+	}
 
 	return (
 		<>
 			<FormHeader
 				current={title}
-				description={description}
+				description={formDescription}
 				onGuideOpen={() => setGuideOpen(true)}
 				title={title}
 			/>
-			<form className="grid min-w-0 max-w-full gap-4 xl:grid-cols-[280px_minmax(0,1fr)]">
+
+			{errorMessage ? (
+				<div className="mb-4 flex items-center gap-2 rounded-base border border-danger-200 bg-danger-50 p-4 text-[14px] text-danger-700">
+					<Icon className="h-5 w-5 shrink-0 text-danger-500" name="alert-circle" />
+					<span>{errorMessage}</span>
+				</div>
+			) : null}
+
+			<form
+				className="grid min-w-0 max-w-full gap-4 xl:grid-cols-[280px_minmax(0,1fr)]"
+				id="category-form"
+				onSubmit={handleSubmit}
+			>
 				<aside className="min-w-0 space-y-4 xl:order-1">
 					<FormCard title="Thumbnail">
 						<div className="flex flex-col items-center text-center">
@@ -76,6 +171,7 @@ export function CategoryForm({ mode }: CategoryFormProps) {
 									onChange={(event) => {
 										const file = event.target.files?.[0];
 										if (file) {
+											setSelectedFile(file);
 											setThumb(URL.createObjectURL(file));
 										}
 									}}
@@ -117,16 +213,16 @@ export function CategoryForm({ mode }: CategoryFormProps) {
 									Assigned products
 								</span>
 								<span className="text-[18px] font-semibold text-ink-900">
-									42
+									{initialData?.productCount ?? initialData?.count ?? 0}
 								</span>
 							</div>
-							<button
+							<Link
 								className="mt-4 flex h-9 w-full items-center justify-center gap-2 rounded-base bg-brand-50 text-[13px] font-semibold text-brand-600 hover:bg-brand-100"
-								type="button"
+								href={routes.products}
 							>
 								View products
 								<Icon className="h-3.5 w-3.5" name="arrow-up-right" />
-							</button>
+							</Link>
 						</FormCard>
 					) : null}
 					<FormCard title="Store Template">
@@ -154,24 +250,57 @@ export function CategoryForm({ mode }: CategoryFormProps) {
 					{tab === "general" ? (
 						<FormCard title="General">
 							<div className="space-y-4">
-								<Field
-									defaultValue={mode === "edit" ? "Headphones" : undefined}
-									help="A category name is required and recommended to be unique."
-									label="Category Name"
-									name="name"
-									placeholder="Category name"
-									required
-								/>
-								<RichTextArea
-									defaultValue={
-										mode === "edit"
-											? "Premium over-ear and in-ear headphones, including wireless and noise-cancelling models."
-											: undefined
-									}
-									help="Set a description to the category for better visibility."
-									label="Description"
-									name="description"
-								/>
+								<label className="block">
+									<span className="text-[13px] font-semibold text-ink-700">
+										Category Name <span className="text-danger-500">*</span>
+									</span>
+									<input
+										className="mt-1.5 h-10 w-full rounded-base border border-surface-line bg-surface-body px-3 text-[14px] placeholder:text-ink-400 focus:border-brand-600"
+										onChange={(e) => handleNameChange(e.target.value)}
+										placeholder="e.g. Smart Watch, Audio"
+										required
+										type="text"
+										value={name}
+									/>
+									<p className="mt-1 text-[12px] text-ink-400">
+										A category name is required and recommended to be unique.
+									</p>
+								</label>
+
+								<label className="block">
+									<span className="text-[13px] font-semibold text-ink-700">
+										Slug (URL path)
+									</span>
+									<input
+										className="mt-1.5 h-10 w-full rounded-base border border-surface-line bg-surface-body px-3 text-[14px] placeholder:text-ink-400 focus:border-brand-600 font-mono text-[13px]"
+										onChange={(e) => {
+											setSlug(e.target.value);
+											setSlugManuallyEdited(true);
+										}}
+										placeholder="e.g. smart-watch"
+										type="text"
+										value={slug}
+									/>
+									<p className="mt-1 text-[12px] text-ink-400">
+										The unique web address slug for this category.
+									</p>
+								</label>
+
+								<label className="block">
+									<span className="text-[13px] font-semibold text-ink-700">
+										Description
+									</span>
+									<textarea
+										className="mt-1.5 min-h-[100px] w-full resize-y rounded-base border border-surface-line bg-surface-body p-3 text-[14px] text-ink-700 placeholder:text-ink-400 focus:border-brand-600"
+										onChange={(e) => setDescription(e.target.value)}
+										placeholder="Describe the items in this category..."
+										rows={3}
+										value={description}
+									/>
+									<p className="mt-1 text-[12px] text-ink-400">
+										Set a description to the category for better visibility.
+									</p>
+								</label>
 							</div>
 						</FormCard>
 					) : null}
@@ -179,30 +308,20 @@ export function CategoryForm({ mode }: CategoryFormProps) {
 						<FormCard title="SEO">
 							<div className="space-y-4">
 								<Field
-									defaultValue={
-										mode === "edit" ? "Headphones - Unimart" : undefined
-									}
+									defaultValue={name ? `${name} - TransAsia` : undefined}
 									help="Recommended to be simple and precise keywords."
 									label="Meta Tag Title"
 									name="meta_title"
 									placeholder="Meta tag name"
 								/>
 								<RichTextArea
-									defaultValue={
-										mode === "edit"
-											? "Shop wireless and noise-cancelling headphones from top brands."
-											: undefined
-									}
+									defaultValue={description || undefined}
 									help="Set a meta tag description to improve SEO ranking."
 									label="Meta Description"
 									name="meta_description"
 								/>
 								<Field
-									defaultValue={
-										mode === "edit"
-											? "headphones, wireless, audio, earbuds"
-											: undefined
-									}
+									defaultValue={name ? `${name.toLowerCase()}, transasia, online shopping` : undefined}
 									help="Separate keywords with a comma."
 									label="Meta Keywords"
 									name="meta_keywords"
@@ -216,7 +335,25 @@ export function CategoryForm({ mode }: CategoryFormProps) {
 					) : null}
 				</div>
 			</form>
-			<FormActions href={routes.categories} />
+
+			<div className="mt-6 flex items-center justify-end gap-3 border-t border-surface-line pt-5">
+				<Link
+					className="inline-flex h-10 items-center gap-2 rounded-base border border-surface-line px-5 text-[14px] font-semibold text-ink-700 hover:bg-surface-muted"
+					href={routes.categories}
+				>
+					Cancel
+				</Link>
+				<button
+					className="inline-flex h-10 items-center gap-2 rounded-base bg-brand-600 px-5 text-[14px] font-semibold text-white hover:bg-brand-700 disabled:opacity-50 cursor-pointer"
+					disabled={isSubmitting}
+					form="category-form"
+					type="submit"
+				>
+					<Icon className="h-4 w-4" name="save" />
+					{isSubmitting ? "Saving Category..." : "Save Changes"}
+				</button>
+			</div>
+
 			{guideOpen ? (
 				<FormGuideDrawer onClose={() => setGuideOpen(false)} />
 			) : null}
@@ -287,7 +424,7 @@ export function Tabs({
 				<button
 					aria-selected={active === tab}
 					className={cn(
-						"relative border px-4 pb-2 pt-1.5 text-sm! rounded-md font-semibold! transition-colors",
+						"relative border px-4 pb-2 pt-1.5 text-sm! rounded-md font-semibold! transition-colors cursor-pointer",
 						active === tab
 							? "bg-brand-600 border-brand-600 text-white"
 							: "bg-white border-surface-line text-ink-500 hover:text-ink-700",

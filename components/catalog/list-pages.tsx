@@ -29,10 +29,20 @@ const statusClass = {
 	review: "bg-warning-50 text-warning-600",
 };
 
-export function CategoryListTable({ categories }: { categories: Category[] }) {
+export function CategoryListTable({
+	categories,
+	onDelete,
+}: {
+	categories: (Category | any)[];
+	onDelete?: (ids: string[]) => Promise<void> | void;
+}) {
 	const rows: CategoryRow[] = categories.map((category) => ({
-		...category,
-		id: category.slug,
+		count: category.count ?? category.productCount ?? 0,
+		id: category.id || category.slug,
+		image: category.image || category.imgSrc || "/assets/images/catagory-img/cat-bg-headphones-01.webp",
+		name: category.name || category.title,
+		slug: category.slug,
+		status: category.status || "published",
 	}));
 	const columns: EntityColumn<CategoryRow>[] = [
 		{
@@ -50,7 +60,7 @@ export function CategoryListTable({ categories }: { categories: Category[] }) {
 					<div>
 						<Link
 							className="font-semibold text-ink-900 hover:text-brand-600"
-							href={routes.editCategory}
+							href={`/categories/${category.id}/edit`}
 						>
 							{category.name}
 						</Link>
@@ -80,7 +90,7 @@ export function CategoryListTable({ categories }: { categories: Category[] }) {
 			label: "Status",
 			render: (category) => (
 				<StatusBadge
-					className={statusClass[category.status]}
+					className={statusClass[category.status] || "bg-success-50 text-success-600"}
 					label={capitalize(category.status)}
 				/>
 			),
@@ -107,6 +117,7 @@ export function CategoryListTable({ categories }: { categories: Category[] }) {
 				},
 			]}
 			items={rows}
+			onDelete={onDelete}
 			searchLabel="Search categories"
 			searchPlaceholder="Search categories"
 			searchText={(category) => `${category.name} ${category.slug}`}

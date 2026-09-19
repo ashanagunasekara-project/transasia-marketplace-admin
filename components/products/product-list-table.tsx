@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Icon } from "@/components/layout/icon";
 import { AppSelect } from "@/components/ui/app-select";
 import { StatusBadge } from "@/components/products/status-badge";
@@ -14,7 +14,8 @@ type SortKey = "name" | "price" | "status" | "stock";
 type SortDirection = "asc" | "desc";
 
 type ProductListTableProps = {
-	products: Product[];
+	onDelete?: (skus: string[]) => Promise<void> | void;
+	products: (Product | any)[];
 };
 
 const statusClass: Record<ProductStatus, string> = {
@@ -36,7 +37,7 @@ const columns = [
 	{ index: 6, key: "status", label: "Status" },
 ] as const;
 
-export function ProductListTable({ products }: ProductListTableProps) {
+export function ProductListTable({ onDelete, products }: ProductListTableProps) {
 	const [query, setQuery] = useState("");
 	const [status, setStatus] = useState<"all" | ProductStatus>("all");
 	const [sort, setSort] = useState<{ direction: SortDirection; key: SortKey }>({
@@ -50,6 +51,10 @@ export function ProductListTable({ products }: ProductListTableProps) {
 	const [columnsOpen, setColumnsOpen] = useState(false);
 	const [confirmOpen, setConfirmOpen] = useState(false);
 	const [rows, setRows] = useState(products);
+
+	useEffect(() => {
+		setRows(products);
+	}, [products]);
 
 	const filteredProducts = useMemo(() => {
 		const normalizedQuery = query.trim().toLowerCase();
@@ -111,12 +116,16 @@ export function ProductListTable({ products }: ProductListTableProps) {
 		});
 	}
 
-	function confirmDelete() {
+	async function confirmDelete() {
+		const toDelete = Array.from(selected);
 		setRows((current) =>
 			current.filter((product) => !selected.has(product.sku)),
 		);
 		setSelected(new Set());
 		setConfirmOpen(false);
+		if (onDelete && toDelete.length > 0) {
+			await onDelete(toDelete);
+		}
 	}
 
 	function isColumnVisible(index: number) {
@@ -288,7 +297,7 @@ export function ProductListTable({ products }: ProductListTableProps) {
 										<div>
 											<Link
 												className="font-semibold text-ink-900 hover:text-brand-600"
-												href={routes.editProduct}
+												href={`/products/${product.id || product.sku}/edit`}
 											>
 												{product.name}
 											</Link>
@@ -312,7 +321,7 @@ export function ProductListTable({ products }: ProductListTableProps) {
 										isColumnVisible(4) ? "" : "hidden",
 									)}
 								>
-									${product.price.toFixed(2)}
+									${Number(product.price).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
 								</td>
 								<td
 									className={cn(
@@ -332,8 +341,8 @@ export function ProductListTable({ products }: ProductListTableProps) {
 									)}
 								>
 									<StatusBadge
-										className={statusClass[product.status]}
-										label={statusLabel[product.status]}
+										className={(statusClass as Record<string, string>)[product.status] || "bg-success-50 text-success-600"}
+										label={(statusLabel as Record<string, string>)[product.status] || String(product.status)}
 									/>
 								</td>
 								<td className="py-4 text-right">
@@ -348,7 +357,7 @@ export function ProductListTable({ products }: ProductListTableProps) {
 										<Link
 											aria-label="Edit product"
 											className="icon-button hover:bg-brand-50 hover:text-brand-600"
-											href={routes.editProduct}
+											href={`/products/${product.id || product.sku}/edit`}
 										>
 											<Icon className="h-4 w-4" name="pencil" />
 										</Link>

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Icon } from "@/components/layout/icon";
 import { AppSelect } from "@/components/ui/app-select";
 import { cn } from "@/utils/cn";
@@ -26,6 +26,7 @@ type EntityTableProps<T extends { id: string }> = {
 	editHref: string;
 	filterOptions?: FilterOption<T>[];
 	items: T[];
+	onDelete?: (ids: string[]) => Promise<void> | void;
 	searchLabel: string;
 	searchPlaceholder: string;
 	searchText: (row: T) => string;
@@ -43,6 +44,7 @@ export function EntityTable<T extends { id: string }>({
 	editHref,
 	filterOptions,
 	items,
+	onDelete,
 	searchLabel,
 	searchPlaceholder,
 	searchText,
@@ -53,6 +55,10 @@ export function EntityTable<T extends { id: string }>({
 	const [query, setQuery] = useState("");
 	const [filter, setFilter] = useState(filterOptions?.[0]?.value ?? "all");
 	const [rows, setRows] = useState(items);
+
+	useEffect(() => {
+		setRows(items);
+	}, [items]);
 	const [selected, setSelected] = useState<Set<string>>(new Set());
 	const [columnsOpen, setColumnsOpen] = useState(false);
 	const [confirmOpen, setConfirmOpen] = useState(false);
@@ -134,10 +140,14 @@ export function EntityTable<T extends { id: string }>({
 		});
 	}
 
-	function confirmDelete() {
+	async function confirmDelete() {
+		const idsToDelete = Array.from(selected);
 		setRows((current) => current.filter((row) => !selected.has(row.id)));
 		setSelected(new Set());
 		setConfirmOpen(false);
+		if (onDelete && idsToDelete.length > 0) {
+			await onDelete(idsToDelete);
+		}
 	}
 
 	return (
