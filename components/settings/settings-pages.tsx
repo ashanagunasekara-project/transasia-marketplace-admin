@@ -8,6 +8,7 @@ import { Icon } from "@/components/layout/icon";
 import { PageHeader } from "@/components/layout/page-header";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { routes } from "@/config/routes";
+import { StoreProfileForm } from "./store-profile-form";
 
 type SettingsHeaderProps = {
 	description: string;
@@ -135,50 +136,11 @@ export function StoreProfilePage() {
 	return (
 		<>
 			<SettingsHeader
-				description="Configure store identity, fulfillment, and operational defaults."
+				description="Configure store identity, logo, and operational defaults."
 				eyebrow="Configuration"
-				title="Settings"
+				title="Store Profile & Logo"
 			/>
-			<form className="rounded-card border border-surface-line bg-surface-card p-6 shadow-card">
-				<div className="border-b border-surface-line pb-5">
-					<h2 className="text-[20px] font-medium text-ink-900">
-						Store Profile
-					</h2>
-					<p className="mt-1 text-[14px] text-ink-500">
-						These details appear in invoices, notifications, and storefront
-						metadata.
-					</p>
-				</div>
-				<div className="mt-6 grid gap-5 md:grid-cols-2">
-					<Field
-						defaultValue="Unimart Grocery"
-						label="Store name"
-						name="store_name"
-					/>
-					<Field
-						defaultValue="support@unimart.local"
-						label="Support email"
-						name="support_email"
-						type="email"
-					/>
-					<SelectField
-						label="Default currency"
-						name="currency"
-						options={["USD - US Dollar", "BDT - Bangladeshi Taka"]}
-					/>
-					<SelectField
-						label="Timezone"
-						name="timezone"
-						options={["Asia/Dhaka", "UTC"]}
-					/>
-				</div>
-				<SettingCheckbox
-					checked
-					description="Send operational alerts when orders fail payment, stock, or fulfillment checks."
-					label="Enable order alert emails"
-				/>
-				<FormFooter cancelHref={routes.settings} />
-			</form>
+			<StoreProfileForm />
 		</>
 	);
 }

@@ -593,3 +593,40 @@ export async function createAdminCustomer(data: {
 	}
 	return json.data;
 }
+
+// ----------------------------------------------------
+// Branding & Store Identity API
+// ----------------------------------------------------
+
+export type BrandingSettings = {
+	logoUrl: string;
+	altText?: string;
+	storeName: string;
+};
+
+export async function fetchBrandingSettings(): Promise<BrandingSettings> {
+	const res = await fetch(`${API_URL}/api/settings/branding`);
+	const json = await res.json();
+	if (!res.ok || !json.success) {
+		throw new Error(json.message || "Failed to fetch branding settings");
+	}
+	return json.data;
+}
+
+export async function updateBrandingSettings(data: {
+	logoUrl?: string;
+	altText?: string;
+	storeName?: string;
+}): Promise<BrandingSettings> {
+	const res = await fetch(`${API_URL}/api/settings/branding`, {
+		body: JSON.stringify(data),
+		headers: { "Content-Type": "application/json" },
+		method: "PUT",
+	});
+	const json = await res.json();
+	if (!res.ok || !json.success) {
+		throw new Error(json.message || "Failed to update branding settings");
+	}
+	return json.data;
+}
+
