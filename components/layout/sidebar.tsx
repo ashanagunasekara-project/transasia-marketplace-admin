@@ -12,6 +12,7 @@ import { useDashboardChrome } from "./dashboard-chrome";
 import { UserProfileDropdown } from "./header";
 import { Icon } from "./icon";
 import { SearchKbd } from "./sidebar-search";
+import { AdminLogo } from "./admin-logo";
 
 export function Sidebar() {
 	const { closeSidebar, mobileOpen, toggleCollapsed } = useDashboardChrome();
@@ -28,32 +29,12 @@ export function Sidebar() {
 		>
 			<div className="sidebar-header relative flex items-center gap-2 p-3">
 				<Link
-					aria-label="Unimart dashboard"
+					aria-label="Transasia dashboard"
 					className="ws-switch flex flex-1 items-center gap-2 rounded-base px-2 py-1.5"
 					href={routes.dashboard}
 				>
-					<Image
-						alt="Unimart"
-						className="logo-full h-8 max-w-[300px] w-auto dark:hidden"
-						height={32}
-						priority
-						src={`${baseURL}assets/images/logo/logo.webp`}
-						width={142}
-					/>
-					<Image
-						alt="Unimart"
-						className="logo-full hidden h-8 w-auto dark:block"
-						height={32}
-						src={`${baseURL}assets/images/logo/logo-blackbg.webp`}
-						width={142}
-					/>
-					<Image
-						alt="Unimart"
-						className="logo-mark hidden h-9 w-9 shrink-0 rounded-lg object-contain"
-						height={36}
-						src={`${baseURL}assets/images/favicon.png`}
-						width={36}
-					/>
+					<AdminLogo className="dark:brightness-110" />
+					<AdminLogo className="dark:brightness-110" isMarkOnly />
 				</Link>
 				<button
 					aria-label="Collapse sidebar"
