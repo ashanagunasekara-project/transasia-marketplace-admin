@@ -126,6 +126,23 @@ export const primaryNavigation: Array<NavigationGroup | NavigationItem> = [
 		label: "Roles",
 	},
 	{
+		children: [
+			{
+				href: routes.heroBanners,
+				key: "hero-banners",
+				label: "Hero Banners",
+			},
+			{
+				href: routes.popularCategories,
+				key: "popular-categories",
+				label: "Popular Categories",
+			},
+		],
+		icon: "image",
+		key: "home-banners",
+		label: "Home Banners",
+	},
+	{
 		href: routes.media,
 		icon: "image",
 		key: "media",

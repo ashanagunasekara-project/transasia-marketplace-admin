@@ -630,3 +630,112 @@ export async function updateBrandingSettings(data: {
 	return json.data;
 }
 
+// ----------------------------------------------------
+// Home Banners API (Hero & Popular Categories)
+// ----------------------------------------------------
+
+export type HeroBannerItem = {
+	btnText?: string;
+	hasCurvedPortion?: boolean;
+	height?: number;
+	id: string;
+	imgSrc: string;
+	link: string;
+	mobileImgSrc?: string;
+	oldPrice?: number | string;
+	order?: number;
+	price?: number | string;
+	savePercent?: string;
+	subtitle?: string;
+	title: string;
+	width?: number;
+};
+
+export type HeroBannersResponse = {
+	autoShift: boolean;
+	autoShiftDelay: number;
+	data: HeroBannerItem[];
+};
+
+export async function fetchHeroBanners(): Promise<HeroBannersResponse> {
+	const res = await fetch(`${API_URL}/api/banners/hero`, { cache: "no-store" });
+	const json = await res.json();
+	if (!res.ok || !json.success) {
+		throw new Error(json.message || "Failed to fetch hero banners");
+	}
+	return {
+		autoShift: json.autoShift ?? true,
+		autoShiftDelay: json.autoShiftDelay ?? 3500,
+		data: json.data || [],
+	};
+}
+
+export async function updateHeroBanners(payload: {
+	autoShift: boolean;
+	autoShiftDelay: number;
+	banners: HeroBannerItem[];
+}): Promise<HeroBannersResponse> {
+	const res = await fetch(`${API_URL}/api/banners/hero`, {
+		body: JSON.stringify(payload),
+		headers: { "Content-Type": "application/json" },
+		method: "PUT",
+	});
+	const json = await res.json();
+	if (!res.ok || !json.success) {
+		throw new Error(json.message || "Failed to update hero banners");
+	}
+	return {
+		autoShift: json.autoShift ?? true,
+		autoShiftDelay: json.autoShiftDelay ?? 3500,
+		data: json.data || [],
+	};
+}
+
+export type PopularCategoryItem = {
+	id: string;
+	imgSrc: string;
+	link: string;
+	subCategories: Array<{ href: string; title: string }>;
+	title: string;
+};
+
+export type PopularCategoriesDealBanner = {
+	imgSrc: string;
+	link: string;
+	secondaryTitle: string;
+	subtitle: string;
+	title: string;
+};
+
+export type PopularCategoriesResponse = {
+	categories: PopularCategoryItem[];
+	dealBanner: PopularCategoriesDealBanner;
+	sectionTitle: string;
+	viewAllLink: string;
+};
+
+export async function fetchPopularCategories(): Promise<PopularCategoriesResponse> {
+	const res = await fetch(`${API_URL}/api/banners/popular-categories`, {
+		cache: "no-store",
+	});
+	const json = await res.json();
+	if (!res.ok || !json.success) {
+		throw new Error(json.message || "Failed to fetch popular categories");
+	}
+	return json.data;
+}
+
+export async function updatePopularCategories(
+	payload: PopularCategoriesResponse,
+): Promise<PopularCategoriesResponse> {
+	const res = await fetch(`${API_URL}/api/banners/popular-categories`, {
+		body: JSON.stringify(payload),
+		headers: { "Content-Type": "application/json" },
+		method: "PUT",
+	});
+	const json = await res.json();
+	if (!res.ok || !json.success) {
+		throw new Error(json.message || "Failed to update popular categories");
+	}
+	return json.data;
+}
