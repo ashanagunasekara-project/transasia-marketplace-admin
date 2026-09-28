@@ -5,13 +5,16 @@ import type { Product, ProductStatus } from "@/data/products/data";
 export const API_URL =
 	process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
+export const STOREFRONT_URL =
+	process.env.NEXT_PUBLIC_STOREFRONT_URL || "http://localhost:3000";
+
 /**
  * Resolves an image URL to a valid browser-loadable path.
- * Handles uploaded files (/uploads/...), local static assets (/assets/...), and remote URLs.
+ * Handles uploaded files (/uploads/...), storefront assets (/assets/...), and remote URLs.
  */
 export function resolveImageUrl(url?: string | null): string {
 	if (!url) {
-		return `${baseURL}assets/images/placeholder.webp`;
+		return "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' fill='%23f1f5f9'><rect width='100' height='100' fill='%23f8fafc'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='11' fill='%2394a3b8'>No Image</text></svg>";
 	}
 
 	// Direct full URLs, blob previews, or base64 data
@@ -27,6 +30,12 @@ export function resolveImageUrl(url?: string | null): string {
 	// Files served by backend uploads static directory
 	if (url.startsWith("/uploads/")) {
 		return `${API_URL}${url}`;
+	}
+
+	// Storefront assets served by storefront Next.js server
+	if (url.startsWith("/assets/") || url.startsWith("assets/")) {
+		const clean = url.startsWith("/") ? url : `/${url}`;
+		return `${STOREFRONT_URL}${clean}`;
 	}
 
 	// Assets served from admin public folder
@@ -787,6 +796,18 @@ export async function updateTopbarSettings(
 // Promotional Banners & Deals Visibility API
 // ----------------------------------------------------
 
+export type HighlightProductItem = {
+	id: string | number;
+	imgSrc: string;
+	link?: string;
+	mobileImgSrc?: string;
+	oldPrice?: number | null;
+	price: number;
+	rating?: number;
+	ratingCount?: number;
+	title: string;
+};
+
 export type PromotionalBannerItem = {
 	btnText: string;
 	imgSrc: string;
@@ -801,6 +822,7 @@ export type PromotionalBannerItem = {
 
 export type PromotionsSettings = {
 	highlightsBanner: PromotionalBannerItem;
+	highlightsProducts?: HighlightProductItem[];
 	powerUpBanner: PromotionalBannerItem;
 	showTodaysBestDeals: boolean;
 };

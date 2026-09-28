@@ -170,7 +170,7 @@ export default function TopbarTickerPage() {
 						type="number"
 						step="500"
 						min="1000"
-						value={delay}
+						value={delay ?? 3500}
 						onChange={(e) => setDelay(Number(e.target.value))}
 						className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
 					/>
@@ -222,7 +222,7 @@ export default function TopbarTickerPage() {
 									</label>
 									<input
 										type="text"
-										value={slide.text}
+										value={slide.text ?? ""}
 										onChange={(e) =>
 											handleSlideChange(idx, "text", e.target.value)
 										}
@@ -238,7 +238,7 @@ export default function TopbarTickerPage() {
 										</label>
 										<input
 											type="text"
-											value={slide.linkText}
+											value={slide.linkText ?? ""}
 											onChange={(e) =>
 												handleSlideChange(idx, "linkText", e.target.value)
 											}
@@ -252,7 +252,7 @@ export default function TopbarTickerPage() {
 										</label>
 										<input
 											type="text"
-											value={slide.link}
+											value={slide.link ?? ""}
 											onChange={(e) =>
 												handleSlideChange(idx, "link", e.target.value)
 											}
