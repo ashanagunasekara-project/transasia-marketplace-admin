@@ -144,7 +144,7 @@ export default function PromotionalBannersPage() {
 					<button
 						onClick={handleSave}
 						disabled={saving}
-						className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-5 py-2.5 text-sm font-medium text-white shadow hover:bg-primary-700 disabled:opacity-50 transition"
+						className="inline-flex items-center gap-2 rounded-base bg-brand-600 px-5 py-2.5 text-sm font-medium text-white shadow hover:bg-brand-700 disabled:opacity-50 transition"
 					>
 						<Icon name="check" className="h-4 w-4" />
 						{saving ? "Saving..." : "Save All Changes"}
@@ -154,11 +154,10 @@ export default function PromotionalBannersPage() {
 
 			{statusMessage && (
 				<div
-					className={`rounded-lg p-4 text-sm font-medium ${
-						statusMessage.type === "success"
-							? "bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800"
-							: "bg-rose-50 text-rose-800 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800"
-					}`}
+					className={`rounded-lg p-4 text-sm font-medium ${statusMessage.type === "success"
+						? "bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800"
+						: "bg-rose-50 text-rose-800 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800"
+						}`}
 				>
 					{statusMessage.text}
 				</div>
@@ -428,14 +427,12 @@ export default function PromotionalBannersPage() {
 						<button
 							type="button"
 							onClick={() => setShowTodaysBestDeals(!showTodaysBestDeals)}
-							className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 ${
-								showTodaysBestDeals ? "bg-primary-600" : "bg-slate-300 dark:bg-slate-700"
-							}`}
+							className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 ${showTodaysBestDeals ? "bg-primary-600" : "bg-slate-300 dark:bg-slate-700"
+								}`}
 						>
 							<span
-								className={`inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-									showTodaysBestDeals ? "translate-x-5" : "translate-x-0"
-								}`}
+								className={`inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${showTodaysBestDeals ? "translate-x-5" : "translate-x-0"
+									}`}
 							/>
 						</button>
 					</div>

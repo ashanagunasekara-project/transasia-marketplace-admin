@@ -108,7 +108,7 @@ export default function TopbarTickerPage() {
 						<button
 							onClick={handleSave}
 							disabled={saving}
-							className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-5 py-2 text-sm font-medium text-white shadow hover:bg-primary-700 disabled:opacity-50 transition"
+							className="inline-flex items-center gap-2 rounded-base bg-brand-600 px-5 py-2 text-sm font-medium text-white shadow hover:bg-brand-700 disabled:opacity-50 transition"
 						>
 							<Icon name="check" className="h-4 w-4" />
 							{saving ? "Saving..." : "Save Changes"}
@@ -119,11 +119,10 @@ export default function TopbarTickerPage() {
 
 			{statusMessage && (
 				<div
-					className={`rounded-lg p-4 text-sm font-medium ${
-						statusMessage.type === "success"
-							? "bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800"
-							: "bg-rose-50 text-rose-800 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800"
-					}`}
+					className={`rounded-lg p-4 text-sm font-medium ${statusMessage.type === "success"
+						? "bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800"
+						: "bg-rose-50 text-rose-800 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800"
+						}`}
 				>
 					{statusMessage.text}
 				</div>
