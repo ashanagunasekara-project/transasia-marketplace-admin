@@ -128,6 +128,11 @@ export const primaryNavigation: Array<NavigationGroup | NavigationItem> = [
 	{
 		children: [
 			{
+				href: routes.topbarTicker,
+				key: "topbar-ticker",
+				label: "Topbar Ticker",
+			},
+			{
 				href: routes.heroBanners,
 				key: "hero-banners",
 				label: "Hero Banners",
@@ -136,6 +141,11 @@ export const primaryNavigation: Array<NavigationGroup | NavigationItem> = [
 				href: routes.popularCategories,
 				key: "popular-categories",
 				label: "Popular Categories",
+			},
+			{
+				href: routes.promotionalBanners,
+				key: "promotional-banners",
+				label: "Promotional Banners",
 			},
 		],
 		icon: "image",

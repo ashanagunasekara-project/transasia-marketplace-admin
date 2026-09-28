@@ -739,3 +739,94 @@ export async function updatePopularCategories(
 	}
 	return json.data;
 }
+
+// ----------------------------------------------------
+// Topbar Announcement Ticker API
+// ----------------------------------------------------
+
+export type TopbarSlide = {
+	id: string;
+	link: string;
+	linkText: string;
+	text: string;
+};
+
+export type TopbarSettings = {
+	delay: number;
+	enabled: boolean;
+	slides: TopbarSlide[];
+};
+
+export async function fetchTopbarSettings(): Promise<TopbarSettings> {
+	const res = await fetch(`${API_URL}/api/banners/topbar`, {
+		cache: "no-store",
+	});
+	const json = await res.json();
+	if (!res.ok || !json.success) {
+		throw new Error(json.message || "Failed to fetch topbar ticker settings");
+	}
+	return json.data;
+}
+
+export async function updateTopbarSettings(
+	payload: TopbarSettings,
+): Promise<TopbarSettings> {
+	const res = await fetch(`${API_URL}/api/banners/topbar`, {
+		body: JSON.stringify(payload),
+		headers: { "Content-Type": "application/json" },
+		method: "PUT",
+	});
+	const json = await res.json();
+	if (!res.ok || !json.success) {
+		throw new Error(json.message || "Failed to update topbar ticker settings");
+	}
+	return json.data;
+}
+
+// ----------------------------------------------------
+// Promotional Banners & Deals Visibility API
+// ----------------------------------------------------
+
+export type PromotionalBannerItem = {
+	btnText: string;
+	imgSrc: string;
+	link: string;
+	mobileImgSrc?: string;
+	secondarySubtitle: string;
+	sectionTitle?: string;
+	subtitle: string;
+	titleBold: string;
+	titleRegular: string;
+};
+
+export type PromotionsSettings = {
+	highlightsBanner: PromotionalBannerItem;
+	powerUpBanner: PromotionalBannerItem;
+	showTodaysBestDeals: boolean;
+};
+
+export async function fetchPromotionsSettings(): Promise<PromotionsSettings> {
+	const res = await fetch(`${API_URL}/api/banners/promotions`, {
+		cache: "no-store",
+	});
+	const json = await res.json();
+	if (!res.ok || !json.success) {
+		throw new Error(json.message || "Failed to fetch promotional banners");
+	}
+	return json.data;
+}
+
+export async function updatePromotionsSettings(
+	payload: PromotionsSettings,
+): Promise<PromotionsSettings> {
+	const res = await fetch(`${API_URL}/api/banners/promotions`, {
+		body: JSON.stringify(payload),
+		headers: { "Content-Type": "application/json" },
+		method: "PUT",
+	});
+	const json = await res.json();
+	if (!res.ok || !json.success) {
+		throw new Error(json.message || "Failed to update promotional banners");
+	}
+	return json.data;
+}
