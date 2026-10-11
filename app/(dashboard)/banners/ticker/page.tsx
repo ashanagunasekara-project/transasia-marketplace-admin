@@ -44,6 +44,7 @@ export default function TopbarTickerPage() {
 			setSaving(true);
 			setStatusMessage(null);
 			const res = await updateTopbarSettings({
+				enabled: true,
 				slides,
 				delay: Number(delay) || 3500,
 			});
@@ -94,6 +95,7 @@ export default function TopbarTickerPage() {
 	return (
 		<div className="space-y-6 pb-12">
 			<PageHeader
+				eyebrow="Announcements & Banners"
 				title="Topbar Announcements Ticker"
 				description="Manage the sliding notification ticker displayed at the top header of the storefront."
 				actions={

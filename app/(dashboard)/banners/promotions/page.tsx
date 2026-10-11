@@ -312,6 +312,7 @@ export default function PromotionalBannersPage() {
 	return (
 		<div className="space-y-8 pb-16">
 			<PageHeader
+				eyebrow="Banners & Promotions"
 				title="Promotional Banners & Deals"
 				description="Manage Start Product Banner Area (Figger 01), This Week’s Highlights (maximum 6 products + banner), and toggle Today's Best Deals."
 				actions={

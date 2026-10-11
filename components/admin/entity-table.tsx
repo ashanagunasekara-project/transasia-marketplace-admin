@@ -23,7 +23,7 @@ type FilterOption<T> = {
 type EntityTableProps<T extends { id: string }> = {
 	columns: EntityColumn<T>[];
 	deleteMessage: string;
-	editHref: string;
+	editHref: string | ((row: T) => string);
 	filterOptions?: FilterOption<T>[];
 	items: T[];
 	onDelete?: (ids: string[]) => Promise<void> | void;
@@ -318,7 +318,7 @@ export function EntityTable<T extends { id: string }>({
 										<Link
 											aria-label={`Edit ${singularName}`}
 											className="icon-button hover:bg-brand-50 hover:text-brand-600"
-											href={editHref}
+											href={typeof editHref === "function" ? editHref(row) : editHref}
 										>
 											<Icon className="h-4 w-4" name="pencil" />
 										</Link>

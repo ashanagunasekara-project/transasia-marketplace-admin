@@ -16,12 +16,22 @@ import type {
 } from "@/data/admin/catalog";
 import { cn } from "@/utils/cn";
 
-type CategoryRow = Category & { id: string };
+type CategoryRow = {
+	count: number;
+	id: string;
+	image: string;
+	name: string;
+	parentId?: string | null;
+	parentName?: string | null;
+	slug: string;
+	status: string;
+	subCategoriesCount: number;
+};
 type BrandRow = Brand & { id: string };
 type AttributeRow = Attribute & { id: string };
 type CustomerRow = Customer & { id: string };
 
-const statusClass = {
+const statusClass: Record<string, string> = {
 	active: "bg-success-50 text-success-600",
 	archived: "bg-surface-muted text-ink-600",
 	draft: "bg-warning-50 text-warning-600",
@@ -39,11 +49,20 @@ export function CategoryListTable({
 	const rows: CategoryRow[] = categories.map((category) => ({
 		count: category.count ?? category.productCount ?? 0,
 		id: category.id || category.slug,
-		image: category.image || category.imgSrc || "/assets/images/catagory-img/cat-bg-headphones-01.webp",
+		image:
+			category.image ||
+			category.imgSrc ||
+			"/assets/images/catagory-img/cat-bg-headphones-01.webp",
 		name: category.name || category.title,
+		parentId: category.parentId ?? null,
+		parentName: category.parentName || category.parent?.title || null,
 		slug: category.slug,
 		status: category.status || "published",
+		subCategoriesCount:
+			category.subCategoriesCount ??
+			(category.subCategories?.length || 0),
 	}));
+
 	const columns: EntityColumn<CategoryRow>[] = [
 		{
 			key: "category",
@@ -52,19 +71,25 @@ export function CategoryListTable({
 				<div className="flex items-center gap-3">
 					<Image
 						alt={category.name}
-						className="h-12 w-12 rounded-base bg-surface-body object-cover"
+						className="h-12 w-12 rounded-base bg-surface-body object-cover shrink-0"
 						height={48}
 						src={category.image}
 						width={48}
 					/>
 					<div>
 						<Link
-							className="font-semibold text-ink-900 hover:text-brand-600"
+							className="font-semibold text-ink-900 hover:text-brand-600 transition-colors"
 							href={`/categories/${category.id}/edit`}
 						>
 							{category.name}
 						</Link>
-						<p className="mt-1 text-[13px] text-ink-400">/{category.slug}</p>
+						<p className="mt-0.5 text-[12px] text-ink-400">/{category.slug}</p>
+						{category.parentName ? (
+							<p className="mt-1 flex items-center gap-1 text-[11px] font-medium text-brand-600">
+								<span>↳ Under:</span>
+								<span className="font-semibold">{category.parentName}</span>
+							</p>
+						) : null}
 					</div>
 				</div>
 			),
@@ -72,16 +97,41 @@ export function CategoryListTable({
 		},
 		{
 			hideable: true,
+			key: "hierarchy",
+			label: "Hierarchy Level",
+			render: (category) =>
+				category.parentId ? (
+					<span className="inline-flex items-center gap-1 rounded-full bg-purple-50 px-2.5 py-1 text-[12px] font-medium text-purple-700 border border-purple-200">
+						Subcategory
+					</span>
+				) : (
+					<span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-2.5 py-1 text-[12px] font-medium text-blue-700 border border-blue-200">
+						<span>Parent Category</span>
+						{category.subCategoriesCount > 0 ? (
+							<span className="rounded-full bg-blue-200 px-1.5 py-0.2 text-[11px] font-semibold text-blue-800">
+								{category.subCategoriesCount}
+							</span>
+						) : null}
+					</span>
+				),
+			sortValue: (category) => (category.parentId ? 1 : 0),
+		},
+		{
+			hideable: true,
 			key: "slug",
 			label: "Slug",
-			render: (category) => category.slug,
+			render: (category) => (
+				<span className="font-mono text-[12px] text-ink-500">{category.slug}</span>
+			),
 			sortValue: (category) => category.slug,
 		},
 		{
 			hideable: true,
 			key: "products",
 			label: "Products",
-			render: (category) => category.count,
+			render: (category) => (
+				<span className="text-[13px] font-medium text-ink-700">{category.count}</span>
+			),
 			sortValue: (category) => category.count,
 		},
 		{
@@ -102,9 +152,19 @@ export function CategoryListTable({
 		<EntityTable
 			columns={columns}
 			deleteMessage="This category will be permanently removed from your catalog. This action cannot be undone."
-			editHref={routes.editCategory}
+			editHref={(row) => `/categories/${row.id}/edit`}
 			filterOptions={[
-				{ label: "All", match: () => true, value: "all" },
+				{ label: "All Categories", match: () => true, value: "all" },
+				{
+					label: "Parent Categories",
+					match: (row) => !row.parentId,
+					value: "parents",
+				},
+				{
+					label: "Subcategories",
+					match: (row) => Boolean(row.parentId),
+					value: "subcategories",
+				},
 				{
 					label: "Published",
 					match: (row) => row.status === "published",
@@ -119,8 +179,10 @@ export function CategoryListTable({
 			items={rows}
 			onDelete={onDelete}
 			searchLabel="Search categories"
-			searchPlaceholder="Search categories"
-			searchText={(category) => `${category.name} ${category.slug}`}
+			searchPlaceholder="Search by name, slug, or parent..."
+			searchText={(category) =>
+				`${category.name} ${category.slug} ${category.parentName || ""}`
+			}
 			singularName="category"
 		/>
 	);

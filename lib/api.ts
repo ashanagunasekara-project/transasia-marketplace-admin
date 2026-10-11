@@ -57,10 +57,13 @@ export type ApiCategory = {
 	isWider?: boolean;
 	name: string;
 	parentId?: string | null;
+	parentName?: string | null;
+	parentSlug?: string | null;
 	productCount: number;
 	slug: string;
 	status: "draft" | "published";
 	subCategories?: any[];
+	subCategoriesCount?: number;
 	title: string;
 };
 
@@ -83,13 +86,18 @@ export async function fetchCategories(): Promise<ApiCategory[]> {
 				imgSrc: item.imgSrc || item.image,
 				isWider: item.isWider ?? false,
 				name: item.title || item.name,
-				parentId: item.parentId,
+				parentId: item.parentId ?? null,
+				parentName: item.parentName || item.parent?.title || null,
+				parentSlug: item.parentSlug || item.parent?.slug || null,
 				productCount: item.productCount ?? item.count ?? 0,
 				slug: item.slug,
 				status: (item.status === "draft" ? "draft" : "published") as
 					| "draft"
 					| "published",
 				subCategories: item.subCategories || [],
+				subCategoriesCount:
+					item.subCategoriesCount ??
+					(item.subCategories?.length || 0),
 				title: item.title || item.name,
 			}));
 		}
@@ -122,13 +130,18 @@ export async function fetchCategory(
 				imgSrc: item.imgSrc || item.image,
 				isWider: item.isWider ?? false,
 				name: item.title || item.name,
-				parentId: item.parentId,
+				parentId: item.parentId ?? null,
+				parentName: item.parentName || item.parent?.title || null,
+				parentSlug: item.parentSlug || item.parent?.slug || null,
 				productCount: item.productCount ?? item.count ?? 0,
 				slug: item.slug,
 				status: (item.status === "draft" ? "draft" : "published") as
 					| "draft"
 					| "published",
 				subCategories: item.subCategories || [],
+				subCategoriesCount:
+					item.subCategoriesCount ??
+					(item.subCategories?.length || 0),
 				title: item.title || item.name,
 			};
 		}
@@ -145,7 +158,7 @@ export async function createCategory(data: {
 	imgSrc?: string;
 	isWider?: boolean;
 	name: string;
-	parentId?: string;
+	parentId?: string | null;
 	slug?: string;
 	status?: string;
 	title?: string;
@@ -156,7 +169,7 @@ export async function createCategory(data: {
 			imgSrc: data.imgSrc || data.image,
 			isWider: data.isWider,
 			name: data.name || data.title,
-			parentId: data.parentId,
+			parentId: data.parentId === undefined ? null : data.parentId,
 			slug: data.slug,
 			title: data.title || data.name,
 		}),
@@ -181,7 +194,7 @@ export async function updateCategory(
 		imgSrc?: string;
 		isWider?: boolean;
 		name: string;
-		parentId?: string;
+		parentId?: string | null;
 		slug?: string;
 		status?: string;
 		title?: string;
@@ -192,6 +205,7 @@ export async function updateCategory(
 			...data,
 			imgSrc: data.imgSrc || data.image,
 			title: data.title || data.name,
+			parentId: data.parentId === undefined ? undefined : data.parentId,
 		}),
 		headers: {
 			"Content-Type": "application/json",

@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import {
 	Field,
 	FormCard,
@@ -17,6 +17,7 @@ import { routes } from "@/config/routes";
 import {
 	type ApiCategory,
 	createCategory,
+	fetchCategories,
 	updateCategory,
 	uploadImageFile,
 } from "@/lib/api";
@@ -57,6 +58,36 @@ export function CategoryForm({ initialData, mode }: CategoryFormProps) {
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+	const searchParams = useSearchParams();
+	const queryParentId = searchParams?.get("parentId");
+
+	// Parent category selector
+	const [parentId, setParentId] = useState<string | null>(
+		initialData?.parentId ?? queryParentId ?? null,
+	);
+	const [parentCategories, setParentCategories] = useState<
+		Array<{ id: string; name: string }>
+	>([]);
+
+	useEffect(() => {
+		async function loadParents() {
+			try {
+				const all = await fetchCategories();
+				// Only show top-level categories (no parentId) as valid parents
+				// Exclude the current category being edited
+				const parents = all.filter(
+					(c) =>
+						!c.parentId &&
+						c.id !== initialData?.id,
+				);
+				setParentCategories(parents.map((c) => ({ id: c.id, name: c.name })));
+			} catch {
+				// silent
+			}
+		}
+		loadParents();
+	}, [initialData?.id]);
+
 	const title = mode === "edit" ? "Edit Category" : "Add Category";
 	const formDescription =
 		mode === "edit"
@@ -96,6 +127,7 @@ export function CategoryForm({ initialData, mode }: CategoryFormProps) {
 					description,
 					image: uploadedImageUrl,
 					name,
+					parentId: parentId || null,
 					slug: slug.trim() || undefined,
 					status: status.toLowerCase(),
 				});
@@ -104,6 +136,7 @@ export function CategoryForm({ initialData, mode }: CategoryFormProps) {
 					description,
 					image: uploadedImageUrl,
 					name,
+					parentId: parentId || null,
 					slug: slug.trim() || undefined,
 					status: status.toLowerCase(),
 				});
@@ -240,6 +273,73 @@ export function CategoryForm({ initialData, mode }: CategoryFormProps) {
 							]}
 						/>
 					</FormCard>
+
+					{/* Subcategories Card (when editing a Parent Category) */}
+					{mode === "edit" && !initialData?.parentId ? (
+						<FormCard title="Subcategories">
+							<div className="flex items-center justify-between pb-2.5 border-b border-surface-line text-[13px]">
+								<span className="text-ink-500 font-medium">Subcategories count</span>
+								<span className="font-semibold text-brand-700 bg-brand-50 px-2 py-0.5 rounded-full text-[12px]">
+									{initialData?.subCategories?.length || initialData?.subCategoriesCount || 0}
+								</span>
+							</div>
+
+							{initialData?.subCategories && initialData.subCategories.length > 0 ? (
+								<div className="mt-3 max-h-48 overflow-y-auto space-y-1.5 pr-1">
+									{initialData.subCategories.map((sub: any) => (
+										<div
+											key={sub.id}
+											className="flex items-center justify-between p-2 rounded-base bg-surface-muted/60 text-[13px] hover:bg-surface-muted transition-colors"
+										>
+											<span className="font-medium text-ink-800 truncate mr-2">
+												{sub.title || sub.name}
+											</span>
+											<Link
+												href={`/categories/${sub.id}/edit`}
+												className="text-brand-600 hover:text-brand-700 text-[12px] font-semibold whitespace-nowrap"
+											>
+												Edit
+											</Link>
+										</div>
+									))}
+								</div>
+							) : (
+								<p className="mt-3 text-[12px] text-ink-400">
+									No subcategories under this parent category yet.
+								</p>
+							)}
+
+							<Link
+								href={`/categories/new?parentId=${initialData?.id}`}
+								className="mt-3 flex h-8 w-full items-center justify-center gap-1.5 rounded-base border border-dashed border-brand-300 bg-brand-50/50 text-[12px] font-semibold text-brand-700 hover:bg-brand-50 transition-colors"
+							>
+								<Icon className="h-3.5 w-3.5" name="plus" />
+								Add Subcategory
+							</Link>
+						</FormCard>
+					) : null}
+
+					{/* Parent Category Card (when editing a Subcategory) */}
+					{mode === "edit" && initialData?.parentId ? (
+						<FormCard title="Parent Category">
+							<div className="flex items-center justify-between p-2.5 rounded-base bg-surface-muted/60 text-[13px]">
+								<div className="min-w-0 pr-2">
+									<span className="block text-[11px] text-ink-400 font-medium">
+										Parent Category
+									</span>
+									<span className="font-semibold text-ink-800 truncate block">
+										{initialData.parentName || "Parent"}
+									</span>
+								</div>
+								<Link
+									href={`/categories/${initialData.parentId}/edit`}
+									className="text-brand-600 hover:text-brand-700 text-[12px] font-semibold whitespace-nowrap"
+								>
+									View Parent
+								</Link>
+							</div>
+						</FormCard>
+					) : null}
 				</aside>
 				<div className="min-w-0 space-y-4 xl:order-2">
 					<Tabs
@@ -283,6 +383,33 @@ export function CategoryForm({ initialData, mode }: CategoryFormProps) {
 									/>
 									<p className="mt-1 text-[12px] text-ink-400">
 										The unique web address slug for this category.
+									</p>
+								</label>
+
+								{/* Parent Category Selector */}
+								<label className="block">
+									<span className="text-[13px] font-semibold text-ink-700">
+										Parent Category
+									</span>
+									<select
+										className="mt-1.5 h-10 w-full rounded-base border border-surface-line bg-surface-body px-3 text-[14px] text-ink-700 focus:border-brand-600 focus:outline-none"
+										value={parentId ?? ""}
+										onChange={(e) =>
+											setParentId(e.target.value || null)
+										}
+									>
+										<option value="">
+											None (Top-Level Category)
+										</option>
+										{parentCategories.map((cat) => (
+											<option key={cat.id} value={cat.id}>
+												{cat.name}
+											</option>
+										))}
+									</select>
+									<p className="mt-1 text-[12px] text-ink-400">
+										Assign to a parent category to create a subcategory.
+										Leave as None for a top-level category.
 									</p>
 								</label>
 
