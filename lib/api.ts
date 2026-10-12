@@ -242,6 +242,8 @@ export type ApiProduct = {
 	brandId?: string | null;
 	category: string;
 	categoryId?: string | null;
+	parentCategory?: string | null;
+	parentCategoryId?: string | null;
 	createdAt?: string;
 	description?: string | null;
 	id: string;

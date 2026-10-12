@@ -313,7 +313,20 @@ export function ProductListTable({ onDelete, products }: ProductListTableProps) 
 										isColumnVisible(3) ? "" : "hidden",
 									)}
 								>
-									{product.category}
+									{product.parentCategory ? (
+										<div>
+											<span className="font-semibold text-ink-900 block text-[13px]">
+												{product.category}
+											</span>
+											<span className="text-[11px] text-brand-600 font-medium">
+												↳ {product.parentCategory}
+											</span>
+										</div>
+									) : (
+										<span className="font-medium text-ink-800 text-[13px]">
+											{product.category}
+										</span>
+									)}
 								</td>
 								<td
 									className={cn(

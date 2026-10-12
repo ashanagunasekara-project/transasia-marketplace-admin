@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { SelectField } from "@/components/forms/admin-form-primitives";
 import { Icon } from "@/components/layout/icon";
 import { AppSelect } from "@/components/ui/app-select";
@@ -82,9 +82,9 @@ export function ProductForm({
 	const [stock, setStock] = useState<string | number>(
 		initialData?.stock ?? initialData?.stockQuantity ?? (mode === "edit" ? "25" : "10"),
 	);
-	const [selectedCategoryId, setSelectedCategoryId] = useState<string>(
-		initialData?.categoryId || "",
-	);
+	// Two-tier Category State: Primary Parent Category & Subcategory
+	const [selectedParentCategoryId, setSelectedParentCategoryId] = useState<string>("");
+	const [selectedSubCategoryId, setSelectedSubCategoryId] = useState<string>("");
 	const [selectedBrandId, setSelectedBrandId] = useState<string>(
 		initialData?.brandId || "",
 	);
@@ -122,9 +122,27 @@ export function ProductForm({
 				setCategoriesList(cats);
 				setBrandsList(brs);
 
-				if (!selectedCategoryId && cats.length > 0 && mode === "add") {
-					setSelectedCategoryId(cats[0].id);
+				// Initialize selected parent and subcategory from initialData
+				if (initialData?.categoryId) {
+					const matchedCat = cats.find((c) => c.id === initialData.categoryId);
+					if (matchedCat) {
+						if (matchedCat.parentId) {
+							// initialData.categoryId is a subcategory
+							setSelectedParentCategoryId(matchedCat.parentId);
+							setSelectedSubCategoryId(matchedCat.id);
+						} else {
+							// initialData.categoryId is a top-level parent category
+							setSelectedParentCategoryId(matchedCat.id);
+							setSelectedSubCategoryId("");
+						}
+					}
+				} else if (mode === "add" && cats.length > 0) {
+					const firstParent = cats.find((c) => !c.parentId);
+					if (firstParent) {
+						setSelectedParentCategoryId(firstParent.id);
+					}
 				}
+
 				if (!selectedBrandId && brs.length > 0 && mode === "add") {
 					setSelectedBrandId(brs[0].id);
 				}
@@ -134,6 +152,15 @@ export function ProductForm({
 		}
 		loadOptions();
 	}, []);
+
+	const parentCategories = useMemo(() => {
+		return categoriesList.filter((c) => !c.parentId);
+	}, [categoriesList]);
+
+	const availableSubcategories = useMemo(() => {
+		if (!selectedParentCategoryId) return [];
+		return categoriesList.filter((c) => c.parentId === selectedParentCategoryId);
+	}, [categoriesList, selectedParentCategoryId]);
 
 	function updateFiles(files: FileList | null, target: "media" | "thumb") {
 		if (!files?.length) {
@@ -188,9 +215,12 @@ export function ProductForm({
 				uploadedMediaUrls.push(url);
 			}
 
+			const finalCategoryId =
+				selectedSubCategoryId || selectedParentCategoryId || undefined;
+
 			const payload = {
 				brandId: selectedBrandId || undefined,
-				categoryId: selectedCategoryId || undefined,
+				categoryId: finalCategoryId,
 				description: productDescription,
 				image: uploadedThumb || undefined,
 				images: uploadedMediaUrls.length > 0 ? uploadedMediaUrls : undefined,
@@ -737,34 +767,96 @@ export function ProductForm({
 
 					<Card title="Product Taxonomy" titleTag="h3">
 						<div className="space-y-4">
+							{/* Primary Parent Category */}
 							<div>
-								<span className="text-[13px] font-semibold text-ink-700">Category</span>
+								<span className="text-[13px] font-semibold text-ink-700">
+									Primary Category <span className="text-danger-500">*</span>
+								</span>
 								<select
-									className="mt-1.5 h-10 w-full rounded-base border border-surface-line bg-surface-body px-3 text-[14px] text-ink-700 focus:border-brand-600"
-									onChange={(e) => setSelectedCategoryId(e.target.value)}
-									value={selectedCategoryId}
+									className="mt-1.5 h-10 w-full rounded-base border border-surface-line bg-surface-body px-3 text-[14px] text-ink-700 focus:border-brand-600 focus:outline-none"
+									onChange={(e) => {
+										setSelectedParentCategoryId(e.target.value);
+										setSelectedSubCategoryId(""); // Reset subcategory when parent changes
+									}}
+									value={selectedParentCategoryId}
 								>
-									<option value="">Select a Category...</option>
-									{categoriesList.map((c) => (
+									<option value="">Select a Primary Category...</option>
+									{parentCategories.map((c) => (
 										<option key={c.id} value={c.id}>
-											{c.title || c.name}
+											{c.title || c.name} {c.subCategoriesCount ? `(${c.subCategoriesCount} subcategories)` : ""}
 										</option>
 									))}
 								</select>
+								<p className="mt-1 text-[12px] text-ink-400">
+									Main product category division.
+								</p>
 							</div>
 
+							{/* Subcategory */}
+							<div>
+								<span className="text-[13px] font-semibold text-ink-700">
+									Subcategory
+								</span>
+								<select
+									className="mt-1.5 h-10 w-full rounded-base border border-surface-line bg-surface-body px-3 text-[14px] text-ink-700 focus:border-brand-600 focus:outline-none disabled:bg-surface-muted/60 disabled:text-ink-400"
+									disabled={!selectedParentCategoryId || availableSubcategories.length === 0}
+									onChange={(e) => setSelectedSubCategoryId(e.target.value)}
+									value={selectedSubCategoryId}
+								>
+									<option value="">
+										{!selectedParentCategoryId
+											? "Select a Primary Category first"
+											: availableSubcategories.length === 0
+												? "No subcategories available (Top-level only)"
+												: "-- All / Top-Level Category Only --"}
+									</option>
+									{availableSubcategories.map((sub) => (
+										<option key={sub.id} value={sub.id}>
+											{sub.title || sub.name}
+										</option>
+									))}
+								</select>
+								<p className="mt-1 text-[12px] text-ink-400">
+									Specific subcategory classification within the selected primary category.
+								</p>
+							</div>
+
+							{/* Active Taxonomy Hierarchy Badge */}
+							{selectedParentCategoryId ? (
+								<div className="rounded-base bg-brand-50/70 p-2.5 text-[12px] border border-brand-100 flex items-center gap-1.5 text-brand-900">
+									<Icon className="h-3.5 w-3.5 text-brand-600 shrink-0" name="layers" />
+									<span className="font-semibold">
+										{parentCategories.find((c) => c.id === selectedParentCategoryId)?.title || "Category"}
+									</span>
+									{selectedSubCategoryId ? (
+										<>
+											<span className="text-brand-400 font-bold">›</span>
+											<span className="font-medium text-brand-700">
+												{availableSubcategories.find((s) => s.id === selectedSubCategoryId)?.title || "Subcategory"}
+											</span>
+										</>
+									) : (
+										<span className="text-ink-400 font-normal italic">(Top-Level)</span>
+									)}
+								</div>
+							) : null}
+
 							<Link
-								className="inline-flex h-9 items-center gap-1.5 rounded-base bg-brand-50 px-3 text-[13px] font-semibold text-brand-600 hover:bg-brand-100 hover:text-brand-700"
-								href={routes.addCategory}
+								className="inline-flex h-9 items-center gap-1.5 rounded-base bg-brand-50 px-3 text-[13px] font-semibold text-brand-600 hover:bg-brand-100 hover:text-brand-700 transition-colors"
+								href={
+									selectedParentCategoryId
+										? `${routes.addCategory}?parentId=${selectedParentCategoryId}`
+										: routes.addCategory
+								}
 							>
 								<Icon className="h-3.5 w-3.5" name="plus" />
-								Add new category
+								{selectedParentCategoryId ? "Add Subcategory to this Category" : "Add new category"}
 							</Link>
 
 							<div>
 								<span className="text-[13px] font-semibold text-ink-700">Brand</span>
 								<select
-									className="mt-1.5 h-10 w-full rounded-base border border-surface-line bg-surface-body px-3 text-[14px] text-ink-700 focus:border-brand-600"
+									className="mt-1.5 h-10 w-full rounded-base border border-surface-line bg-surface-body px-3 text-[14px] text-ink-700 focus:border-brand-600 focus:outline-none"
 									onChange={(e) => setSelectedBrandId(e.target.value)}
 									value={selectedBrandId}
 								>
