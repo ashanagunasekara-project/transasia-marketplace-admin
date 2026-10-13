@@ -7,6 +7,7 @@ import { routes } from "@/config/routes";
 import { baseURL, cn } from "@/utils/cn";
 import { useDashboardChrome } from "./dashboard-chrome";
 import { Icon } from "./icon";
+import { AdminLogo } from "./admin-logo";
 
 export function Header() {
 	return (
@@ -43,25 +44,11 @@ function MobileSidebarButton() {
 function MobileLogo() {
 	return (
 		<Link
-			aria-label="Unimart dashboard"
+			aria-label="Transasia dashboard"
 			className="absolute left-1/2 -translate-x-1/2 lg:hidden"
 			href={routes.dashboard}
 		>
-			<Image
-				alt="Unimart"
-				className="h-7 w-auto dark:hidden"
-				height={32}
-				priority
-				src={`${baseURL}assets/images/logo/logo.webp`}
-				width={142}
-			/>
-			<Image
-				alt="Unimart"
-				className="hidden h-7 w-auto dark:block"
-				height={32}
-				src={`${baseURL}assets/images/logo/logo-blackbg.webp`}
-				width={142}
-			/>
+			<AdminLogo className="h-7 w-auto object-contain dark:brightness-110" />
 		</Link>
 	);
 }
