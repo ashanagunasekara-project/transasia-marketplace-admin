@@ -8,6 +8,7 @@ export const routes = {
 	addUser: "/users/new",
 	attributes: "/attributes",
 	brands: "/brands",
+	carts: "/carts",
 	categories: "/categories",
 	coupons: "/coupons",
 	createRole: "/roles/new",

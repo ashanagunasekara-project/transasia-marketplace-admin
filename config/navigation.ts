@@ -166,6 +166,11 @@ export const primaryNavigation: Array<NavigationGroup | NavigationItem> = [
 				label: "Order List",
 			},
 			{
+				href: routes.carts,
+				key: "carts",
+				label: "Active & Abandoned Carts",
+			},
+			{
 				href: routes.orderDetail,
 				key: "order-detail",
 				label: "Order Details",

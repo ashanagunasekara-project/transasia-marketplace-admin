@@ -503,6 +503,8 @@ export type ApiCustomer = {
 	userId: string;
 	userStatus: string;
 	wholesaleCustomerId?: string | null;
+	cartItemsCount?: number;
+	hasActiveCart?: boolean;
 };
 
 export type CustomerStats = {
@@ -868,3 +870,78 @@ export async function updatePromotionsSettings(
 	}
 	return json.data;
 }
+
+// ----------------------------------------------------
+// Shopping Cart Management APIs
+// ----------------------------------------------------
+
+export type AdminCartItem = {
+	id: string;
+	image?: string | null;
+	productId: string;
+	quantity: number;
+	sku?: string | null;
+	stockQuantity: number;
+	title: string;
+	totalPrice: number;
+	unitPrice: number;
+};
+
+export type AdminCart = {
+	businessName?: string | null;
+	createdAt: string;
+	customerName: string;
+	customerType: "REGULAR" | "WHOLESALE" | "GUEST";
+	email?: string | null;
+	id: string;
+	items: AdminCartItem[];
+	itemsCount: number;
+	phone?: string | null;
+	sessionId?: string | null;
+	subtotal: number;
+	updatedAt: string;
+	userId?: string | null;
+	wholesaleCustomerId?: string | null;
+};
+
+export type AdminCartStats = {
+	customerCarts: number;
+	guestCarts: number;
+	totalCarts: number;
+};
+
+export async function fetchAbandonedCarts(params?: {
+	limit?: number;
+	page?: number;
+}): Promise<{ carts: AdminCart[]; stats: AdminCartStats; totalPages: number }> {
+	const query = new URLSearchParams();
+	if (params?.page) query.set("page", String(params.page));
+	if (params?.limit) query.set("limit", String(params.limit));
+
+	const res = await fetch(`${API_URL}/api/admin/carts/abandoned?${query.toString()}`, {
+		cache: "no-store",
+	});
+	const json = await res.json();
+	if (!res.ok || !json.success) {
+		throw new Error(json.message || "Failed to fetch carts");
+	}
+	return {
+		carts: json.data.carts,
+		stats: json.data.stats,
+		totalPages: json.data.pagination.totalPages,
+	};
+}
+
+export async function fetchCustomerCart(
+	customerId: string,
+): Promise<{ items: AdminCartItem[]; subtotal: number; totalItems: number }> {
+	const res = await fetch(`${API_URL}/api/admin/customers/${customerId}/cart`, {
+		cache: "no-store",
+	});
+	const json = await res.json();
+	if (!res.ok || !json.success) {
+		return { items: [], subtotal: 0, totalItems: 0 };
+	}
+	return json.data;
+}
+

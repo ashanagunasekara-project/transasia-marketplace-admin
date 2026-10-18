@@ -7,9 +7,11 @@ import { PageHeader } from "@/components/layout/page-header";
 import { StatCard } from "@/components/layout/dashboard-widgets";
 import { routes } from "@/config/routes";
 import {
+	type AdminCartItem,
 	type ApiCustomer,
 	type CustomerStats,
 	approveWholesaleCustomer,
+	fetchCustomerCart,
 	fetchCustomerStats,
 	fetchCustomers,
 	rejectWholesaleCustomer,
@@ -51,6 +53,27 @@ export function CustomersClient({
 
 	// Modal State for Customer Details
 	const [detailCustomer, setDetailCustomer] = useState<ApiCustomer | null>(null);
+	const [customerCart, setCustomerCart] = useState<{
+		items: AdminCartItem[];
+		subtotal: number;
+		totalItems: number;
+	} | null>(null);
+	const [loadingCustomerCart, setLoadingCustomerCart] = useState(false);
+
+	useEffect(() => {
+		if (!detailCustomer) {
+			setCustomerCart(null);
+			return;
+		}
+		setLoadingCustomerCart(true);
+		fetchCustomerCart(detailCustomer.userId || detailCustomer.id)
+			.then((cartData) => setCustomerCart(cartData))
+			.catch((err) => {
+				console.error("Failed to load customer cart:", err);
+				setCustomerCart(null);
+			})
+			.finally(() => setLoadingCustomerCart(false));
+	}, [detailCustomer]);
 
 	async function loadData() {
 		setLoading(true);
@@ -457,6 +480,15 @@ export function CustomersClient({
 																	({customer.businessName})
 																</span>
 															)}
+															{customer.hasActiveCart && (
+																<span
+																	title={`${customer.cartItemsCount} item(s) in active shopping cart`}
+																	className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-semibold bg-brand-50 text-brand-700 border border-brand-200"
+																>
+																	<Icon className="h-3 w-3 text-brand-600" name="shopping-cart" />
+																	{customer.cartItemsCount}
+																</span>
+															)}
 														</div>
 														<div className="text-[13px] text-ink-500 flex items-center gap-2 mt-0.5">
 															<span className="font-mono text-xs">{customer.phone}</span>
@@ -753,6 +785,56 @@ export function CustomersClient({
 								</div>
 							</div>
 						)}
+
+						{/* Active Shopping Cart Section */}
+						<div className="rounded-base bg-surface-body p-4 border border-surface-line text-xs space-y-3">
+							<div className="flex items-center justify-between">
+								<h4 className="font-bold text-ink-800 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+									<Icon className="h-3.5 w-3.5 text-brand-600" name="shopping-cart" />
+									Active Shopping Cart
+								</h4>
+								{customerCart && customerCart.totalItems > 0 && (
+									<span className="font-bold text-brand-700 font-mono">
+										Subtotal: Rs. {customerCart.subtotal.toLocaleString("en-LK", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+									</span>
+								)}
+							</div>
+
+							{loadingCustomerCart ? (
+								<div className="py-4 text-center text-ink-400 flex items-center justify-center gap-2">
+									<Icon className="h-4 w-4 animate-spin text-brand-600" name="refresh-ccw" />
+									<span>Loading shopping cart...</span>
+								</div>
+							) : customerCart && customerCart.items.length > 0 ? (
+								<div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+									{customerCart.items.map((item) => (
+										<div
+											key={item.id}
+											className="flex items-center justify-between p-2.5 rounded bg-surface-card border border-surface-line"
+										>
+											<div className="flex items-center gap-2.5 min-w-0">
+												<div className="h-8 w-8 rounded bg-surface-body border border-surface-line grid place-items-center shrink-0">
+													<Icon className="h-4 w-4 text-ink-400" name="package" />
+												</div>
+												<div className="min-w-0">
+													<p className="font-medium text-ink-800 text-xs truncate max-w-xs">{item.title}</p>
+													<p className="text-[10px] text-ink-400 font-mono mt-0.5">
+														Qty: {item.quantity} × Rs. {item.unitPrice.toLocaleString()}
+													</p>
+												</div>
+											</div>
+											<span className="font-bold text-ink-900 text-xs shrink-0 font-mono">
+												Rs. {item.totalPrice.toLocaleString()}
+											</span>
+										</div>
+									))}
+								</div>
+							) : (
+								<p className="text-ink-400 italic text-[11px]">
+									Customer currently has no items in their active cart.
+								</p>
+							)}
+						</div>
 
 						<div className="flex items-center justify-between pt-2 border-t border-surface-line">
 							{detailCustomer.isLocked ? (
