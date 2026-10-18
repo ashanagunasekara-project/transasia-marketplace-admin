@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import {
 	Field,
 	FormCard,
@@ -30,7 +30,7 @@ type CategoryFormProps = {
 
 type Tab = "general" | "rules" | "seo";
 
-export function CategoryForm({ initialData, mode }: CategoryFormProps) {
+function CategoryFormContent({ initialData, mode }: CategoryFormProps) {
 	const router = useRouter();
 	const [tab, setTab] = useState<Tab>("general");
 	const [status, setStatus] = useState(
@@ -629,6 +629,14 @@ export function AssignmentRules({ title }: { title: string }) {
 				)}
 			</div>
 		</FormCard>
+	);
+}
+
+export function CategoryForm(props: CategoryFormProps) {
+	return (
+		<Suspense fallback={<div className="p-6 text-sm text-ink-400">Loading category form...</div>}>
+			<CategoryFormContent {...props} />
+		</Suspense>
 	);
 }
 
