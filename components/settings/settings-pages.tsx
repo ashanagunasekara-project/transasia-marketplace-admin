@@ -9,6 +9,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { routes } from "@/config/routes";
 import { StoreProfileForm } from "./store-profile-form";
+import { ShippingSettingsForm } from "./shipping-settings-form";
 
 type SettingsHeaderProps = {
 	description: string;
@@ -148,82 +149,12 @@ export function StoreProfilePage() {
 export function ShippingSettingsPage() {
 	return (
 		<>
-			<SettingsHeader
-				description="Configure delivery methods, free shipping, and fulfillment defaults."
-				title="Shipping"
+			<PageHeader
+				description="Configure regional Sri Lanka courier delivery rates, Out of Colombo fees, and free shipping thresholds."
+				eyebrow="Settings"
+				title="Shipping & Delivery"
 			/>
-			<form className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
-				<section className="space-y-6">
-					<FormCard title="Delivery Methods">
-						<div className="grid gap-5 md:grid-cols-2">
-							<SelectField
-								label="Default method"
-								name="default_method"
-								options={[
-									"Standard delivery",
-									"Express delivery",
-									"Pickup from store",
-								]}
-							/>
-							<SelectField
-								label="Processing time"
-								name="processing_time"
-								options={[
-									"1 business day",
-									"2 business days",
-									"3 business days",
-								]}
-							/>
-							<Field
-								defaultValue="5"
-								label="Standard rate"
-								name="standard_rate"
-								type="number"
-							/>
-							<Field
-								defaultValue="12"
-								label="Express rate"
-								name="express_rate"
-								type="number"
-							/>
-						</div>
-					</FormCard>
-					<FormCard title="Shipping Rules">
-						<SettingCheckbox
-							checked
-							description="Offer free delivery when customers meet the minimum cart amount."
-							label="Enable free shipping threshold"
-						/>
-						<Field
-							defaultValue="49"
-							label="Minimum cart amount"
-							name="minimum_cart"
-							type="number"
-						/>
-					</FormCard>
-				</section>
-				<aside className="rounded-card border border-surface-line bg-surface-card p-5 shadow-card">
-					<span className="grid h-11 w-11 place-items-center rounded-base bg-brand-50 text-brand-600">
-						<Icon className="h-5 w-5" name="truck" />
-					</span>
-					<h2 className="mt-4 text-[17px] font-semibold text-ink-900">
-						Fulfillment Summary
-					</h2>
-					<p className="mt-1 text-[13px] text-ink-500">
-						Standard and express delivery are enabled for all active regions.
-					</p>
-					<div className="mt-5 space-y-3 text-[14px]">
-						<div className="flex items-center justify-between">
-							<span className="text-ink-500">Active zones</span>
-							<span className="font-semibold text-ink-900">4</span>
-						</div>
-						<div className="flex items-center justify-between">
-							<span className="text-ink-500">Pickup locations</span>
-							<span className="font-semibold text-ink-900">2</span>
-						</div>
-					</div>
-				</aside>
-			</form>
+			<ShippingSettingsForm />
 		</>
 	);
 }
