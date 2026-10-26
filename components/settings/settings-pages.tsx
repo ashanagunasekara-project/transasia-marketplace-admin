@@ -10,6 +10,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { routes } from "@/config/routes";
 import { StoreProfileForm } from "./store-profile-form";
 import { ShippingSettingsForm } from "./shipping-settings-form";
+import { PaymentSettingsForm } from "./payment-settings-form";
 
 type SettingsHeaderProps = {
 	description: string;
@@ -162,45 +163,12 @@ export function ShippingSettingsPage() {
 export function PaymentSettingsPage() {
 	return (
 		<>
-			<SettingsHeader
-				description="Configure checkout payment methods and settlement defaults."
-				title="Payments"
+			<PageHeader
+				description="Configure payment methods, Visa & Mastercard card settings, and company bank transfer details."
+				eyebrow="Settings"
+				title="Payments & Bank Details"
 			/>
-			<section className="space-y-6">
-				<FormCard title="Payment Methods">
-					<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-						<PaymentOption
-							checked
-							description="Accept Visa, Mastercard, and Amex."
-							highlighted
-							label="Credit Card"
-						/>
-						<PaymentOption
-							checked
-							description="Allow customers to pay at delivery."
-							label="Cash on Delivery"
-						/>
-						<PaymentOption
-							description="Collect manual bank payments."
-							label="Bank Transfer"
-						/>
-					</div>
-				</FormCard>
-				<FormCard title="Settlement">
-					<div className="grid gap-5 md:grid-cols-2">
-						<SelectField
-							label="Default currency"
-							name="default_currency"
-							options={["USD - US Dollar", "BDT - Bangladeshi Taka"]}
-						/>
-						<SelectField
-							label="Payout schedule"
-							name="payout_schedule"
-							options={["Weekly", "Bi-weekly", "Monthly"]}
-						/>
-					</div>
-				</FormCard>
-			</section>
+			<PaymentSettingsForm />
 		</>
 	);
 }
